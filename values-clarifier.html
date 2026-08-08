@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Прояснение ценностей</title>
+<style>
+  :root{
+    --bg:#f5f2ec; --card:#ffffff; --ink:#2b2925; --muted:#807a6e;
+    --accent:#0f766e; --accent-soft:#e0f0ee; --line:#e8e3d8;
+    --yellow:#ffe9a3; --yellow-ink:#6b5410; --blue:#c9defc; --blue-ink:#1e4a7a;
+    --danger:#b4574a;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:720px; margin:0 auto; padding:28px 20px 80px;}
+  h1,h2,h3{font-family:Georgia,"Times New Roman",serif; font-weight:600; line-height:1.25;}
+  h1{font-size:34px;} h2{font-size:26px; margin-bottom:10px;} h3{font-size:19px; margin-bottom:8px;}
+  p{margin-bottom:12px;}
+  .muted{color:var(--muted);}
+  .small{font-size:13.5px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:26px 26px 24px; box-shadow:0 2px 14px rgba(60,50,20,.05); margin-bottom:16px;}
+  .btn{
+    display:inline-block; border:none; cursor:pointer; border-radius:12px;
+    padding:12px 22px; font-size:16px; font-weight:600; font-family:inherit;
+    background:var(--accent); color:#fff; transition:transform .06s ease, opacity .15s;
+  }
+  .btn:hover{opacity:.92;} .btn:active{transform:scale(.98);}
+  .btn.secondary{background:transparent; color:var(--accent); border:1.5px solid var(--accent);}
+  .btn.ghost{background:transparent; color:var(--muted); border:none; font-weight:500; padding:12px 10px;}
+  .btn.big{font-size:18px; padding:16px 28px;}
+  .btn:disabled{opacity:.35; cursor:default;}
+  .btnrow{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px;}
+  .spread{justify-content:space-between;}
+
+  /* progress */
+  .steps{display:flex; gap:6px; margin-bottom:26px;}
+  .steps div{flex:1; height:5px; border-radius:3px; background:var(--line);}
+  .steps div.on{background:var(--accent);}
+  .stepname{font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;}
+
+  /* chips */
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 4px;}
+  .chip{
+    padding:7px 14px; border-radius:999px; font-size:15px; font-weight:500;
+    display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(0,0,0,.07);
+  }
+  .chip.o1{background:var(--yellow); color:var(--yellow-ink);}
+  .chip.o2{background:var(--blue); color:var(--blue-ink);}
+  .chip .x{cursor:pointer; opacity:.5; font-weight:700;} .chip .x:hover{opacity:1;}
+  .chip.pick{cursor:pointer; background:#fff; border:1.5px solid var(--line); color:var(--ink);}
+  .chip.pick:hover{border-color:var(--accent); color:var(--accent);}
+  .chip.pick.sel{background:var(--accent-soft); border-color:var(--accent); color:var(--accent);}
+
+  /* inputs */
+  input[type=text], textarea{
+    width:100%; border:1.5px solid var(--line); border-radius:12px; background:#fdfcf9;
+    padding:13px 15px; font:inherit; color:var(--ink); outline:none;
+  }
+  input[type=text]:focus, textarea:focus{border-color:var(--accent);}
+  textarea{min-height:96px; resize:vertical;}
+  .addrow{display:flex; gap:8px; margin-top:12px;}
+  .addrow input{flex:1;}
+
+  .qbox{
+    background:var(--accent-soft); border-radius:14px; padding:18px 20px; margin:16px 0;
+  }
+  .qbox .q{font-family:Georgia,serif; font-size:21px; line-height:1.35;}
+  .hint{font-size:13.5px; color:var(--muted); margin-top:10px;}
+
+  .examples{margin-top:14px;}
+  details summary{cursor:pointer; color:var(--accent); font-weight:600; font-size:14.5px;}
+  details .chips{margin-top:10px;}
+
+  /* resonance */
+  .reso{
+    background:linear-gradient(160deg,#211d33,#2c2743 60%,#232036); color:#f1eefc;
+    border-radius:20px; padding:56px 28px; text-align:center; margin-bottom:16px;
+  }
+  .reso .word{font-family:Georgia,serif; font-size:40px; margin:26px 0 34px; min-height:56px;}
+  .reso .sub{color:#b9b3d6; font-size:14.5px;}
+  .reso .btnrow{justify-content:center;}
+  .reso .btn.yes{background:#8ee6b8; color:#0c3a24;}
+  .reso .btn.no{background:transparent; color:#cfc9e8; border:1.5px solid #55507a;}
+
+  /* pairwise */
+  .duel{display:flex; gap:12px; margin:18px 0;}
+  .duel button{
+    flex:1; min-height:110px; border-radius:16px; border:1.5px solid var(--line);
+    background:#fdfcf9; font:600 19px/1.3 Georgia,serif; color:var(--ink); cursor:pointer; padding:16px;
+    transition:border-color .12s, background .12s;
+  }
+  .duel button:hover{border-color:var(--accent); background:var(--accent-soft);}
+  .vs{align-self:center; font-size:13px; color:var(--muted); font-weight:700;}
+
+  /* spine */
+  .spine{list-style:none; margin:10px 0;}
+  .spine li{
+    background:#fdfcf9; border:1px solid var(--line); border-radius:12px;
+    padding:11px 16px; margin-bottom:7px; display:flex; align-items:baseline; gap:12px; font-size:16.5px;
+  }
+  .spine li .n{color:var(--muted); font-size:13px; min-width:20px;}
+  .spine li.top{background:var(--yellow); border-color:#eed27a; font-weight:600;}
+  .spine.mini li{padding:6px 12px; font-size:14px; margin-bottom:5px;}
+  .grey{opacity:.55;}
+
+  .notice{
+    background:#fff8e6; border:1px solid #efdfae; color:#6b5410;
+    border-radius:12px; padding:11px 15px; font-size:13.5px; margin-bottom:18px;
+  }
+  .result-quote{
+    border-left:3px solid var(--accent); padding:4px 0 4px 16px; margin:14px 0;
+    font-family:Georgia,serif; font-size:18px;
+  }
+  .fade{animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  @media(max-width:560px){
+    .duel{flex-direction:column;} .vs{align-self:center;}
+    h1{font-size:28px;} .reso .word{font-size:30px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap"><div id="app"></div></div>
+<script>
+"use strict";
+
+/* ---------- state ---------- */
+const S = {
+  step: 'intro',
+  context: '',
+  values: [],            // {id, text, order:1|2, resonate:null|bool}
+  nextId: 1,
+  q1: 0, q2v: 0, q2q: 0, // question indexes
+  resoQueue: [], resoIdx: 0,
+  sort: null,            // {sorted:[], queue:[], cur:null, p:0, count:0}
+  criteria: {},          // id -> text
+  apply: { fail:'', wantedId:null, wantedText:'', winner:'', fuelIdx:0, fuelId:null, done:false }
+};
+
+const STEPS = ['intro','context','dig1','dig2','resonance','sort','results','criteria','apply','final'];
+const STEPNAMES = {
+  intro:'', context:'Шаг 1 · Фокус-контекст', dig1:'Шаг 2 · Раскопка ценностей',
+  dig2:'Шаг 3 · Копаем глубже', resonance:'Шаг 4 · Проверка откликом',
+  sort:'Шаг 5 · Иерархия', results:'Твоя иерархия', criteria:'Шаг 6 · Критерии',
+  apply:'Шаг 7 · Эксперимент недели', final:'Итог'
+};
+
+const Q1 = [
+  'Зачем тебе вообще этот контекст?',
+  'Что он тебе даёт? Чем он так важен?',
+  'Представь: в этом контексте всё сложилось на десятку. Что это тебе даст?',
+  'Что для тебя в нём самое ценное?'
+];
+const Q2 = [
+  t => `Почему тебе важно — «${t}»?`,
+  t => `Если «${t}» будет в твоей жизни сполна — к чему большему это ведёт? Что становится возможным?`
+];
+const EXAMPLES = ['свобода','любовь','безопасность','здоровье','семья','интерес','энергия','радость','игра','развитие','признание','творчество','спокойствие','близость','новизна','справедливость','красота','гармония','польза людям','мастерство','самостоятельность','устойчивость'];
+
+/* ---------- utils ---------- */
+const app = document.getElementById('app');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const byId = id => S.values.find(v => v.id === id);
+const firstOrder = () => S.values.filter(v => v.order === 1);
+const resonant = () => S.values.filter(v => v.resonate === true);
+
+function addValue(text, order){
+  text = text.trim().replace(/\s+/g,' ');
+  if(!text) return false;
+  if(S.values.some(v => v.text.toLowerCase() === text.toLowerCase())) return false;
+  S.values.push({id:S.nextId++, text, order, resonate:null});
+  return true;
+}
+function removeValue(id){ S.values = S.values.filter(v => v.id !== id); }
+
+function progressBar(){
+  const idx = STEPS.indexOf(S.step);
+  const segs = STEPS.slice(1).map((st,i)=>`<div class="${i < idx ? 'on':''}"></div>`).join('');
+  const name = STEPNAMES[S.step];
+  return (S.step==='intro') ? '' :
+    `<div class="stepname">${name}</div><div class="steps">${segs}</div>`;
+}
+
+function render(html){
+  app.innerHTML = `${progressBar()}<div class="fade">${html}</div>`;
+}
+function chipsHtml(list, removable){
+  return list.map(v =>
+    `<span class="chip o${v.order}">${esc(v.text)}${removable?`<span class="x" data-del="${v.id}">×</span>`:''}</span>`
+  ).join('');
+}
+function bindDeletes(rerender){
+  app.querySelectorAll('[data-del]').forEach(el =>
+    el.addEventListener('click', () => { removeValue(+el.dataset.del); rerender(); }));
+}
+
+/* ---------- screens ---------- */
+function show(){ ({
+  intro:sIntro, context:sContext, dig1:sDig1, dig2:sDig2, resonance:sResonance,
+  sort:sSort, results:sResults, criteria:sCriteria, apply:sApply, final:sFinal
+})[S.step](); }
+
+/* -- intro -- */
+function sIntro(){
+  render(`
+  <div class="card">
+    <h1>Прояснение ценностей</h1>
+    <p class="muted" style="margin-top:6px">Инструмент для самостоятельной работы · 30–40 минут</p>
+    <p style="margin-top:18px">Значительная часть того, что мы чувствуем и делаем — или почему-то не делаем, — управляется ценностями. Они выстроены в иерархию, и она бессознательна: когда что-то «не получается», обычно просто побеждает ценность более высокого порядка.</p>
+    <p>Этот инструмент проведёт тебя по той же дорожке, по которой ведёт коуч:</p>
+    <p>
+      <b>1.</b> Выберешь фокус-контекст.<br>
+      <b>2–3.</b> Раскопаешь ценности вопросами «зачем?» — в два слоя.<br>
+      <b>4.</b> Проверишь каждое слово на отклик.<br>
+      <b>5.</b> Выстроишь иерархию попарным сравнением.<br>
+      <b>6.</b> Опишешь критерии — как ценности выглядят в жизни.<br>
+      <b>7.</b> Возьмёшь эксперимент на неделю.
+    </p>
+    <div class="notice" style="margin-top:16px">Работать с собой сложнее, чем с партнёром: ответ приходит не мгновенно. Не торопись — после каждого вопроса дай себе 20–30 секунд тишины и слушай первый импульс, а не «правильный ответ» из головы.</div>
+    <div class="notice">⚠️ Страница ничего не сохраняет. В конце скачай результат — и не закрывай вкладку до этого.</div>
+    <div class="btnrow"><button class="btn big" id="go">Начать</button></div>
+  </div>`);
+  document.getElementById('go').onclick = () => { S.step='context'; show(); };
+}
+
+/* -- context -- */
+function sContext(){
+  render(`
+  <div class="card">
+    <h2>Фокус-контекст</h2>
+    <p>Возьми один контекст жизни, который сейчас в фокусе и который хочется качнуть. Назови его живо, по-своему — не «работа», а, например, «бизнес, дарящий свободу» или «деньги с кайфом».</p>
+    <input type="text" id="ctx" placeholder="Например: бизнес, дарящий свободу" value="${esc(S.context)}" maxlength="80">
+    <p class="hint">Один заход — один контекст. Второй сможешь пройти отдельно.</p>
+    <div class="btnrow spread">
+      <button class="btn ghost" id="back">← Назад</button>
+      <button class="btn" id="next">Дальше</button>
+    </div>
+  </div>`);
+  const inp = document.getElementById('ctx');
+  inp.focus();
+  const go = () => {
+    if(!inp.value.trim()){ inp.style.borderColor='var(--danger)'; return; }
+    S.context = inp.value.trim(); S.step='dig1'; show();
+  };
+  document.getElementById('next').onclick = go;
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') go(); });
+  document.getElementById('back').onclick = () => { S.step='intro'; show(); };
+}
+
+/* -- dig round 1 -- */
+function sDig1(){
+  const q = Q1[S.q1 % Q1.length];
+  render(`
+  <div class="card">
+    <h2>Раскопка: первый круг</h2>
+    <p class="muted">Контекст: <b>${esc(S.context)}</b></p>
+    <div class="qbox"><div class="q">${esc(q)}</div>
+      <div class="hint">Закрой глаза, задай себе этот вопрос и подожди. Ответы записывай короткими словами-ценностями: «свобода», «игра», «устойчивость»… На один вопрос может прийти несколько ответов — или ни одного, это нормально.</div>
+    </div>
+    <div class="addrow">
+      <input type="text" id="val" placeholder="Слово-ценность…" maxlength="40">
+      <button class="btn secondary" id="add">Добавить</button>
+    </div>
+    <div class="chips" id="chips">${chipsHtml(firstOrder(), true)}</div>
+    <div class="examples"><details><summary>Примеры ценностей — если совсем не идёт</summary>
+      <div class="chips">${EXAMPLES.map(e=>`<span class="chip pick" data-ex="${e}">${e}</span>`).join('')}</div>
+      <p class="hint">Это подсказки, не меню. Своя формулировка — даже странная, вроде «охуенность» — всегда точнее чужой.</p>
+    </details></div>
+    <div class="btnrow spread">
+      <button class="btn ghost" id="back">← Контекст</button>
+      <div>
+        <button class="btn secondary" id="nextq">Другой вопрос</button>
+        <button class="btn" id="next">Дальше →</button>
+      </div>
+    </div>
+    <p class="hint" id="warn"></p>
+  </div>`);
+  const inp = document.getElementById('val');
+  const add = () => { if(addValue(inp.value,1)){ inp.value=''; sDig1(); document.getElementById('val').focus(); } };
+  document.getElementById('add').onclick = add;
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') add(); });
+  app.querySelectorAll('[data-ex]').forEach(el => el.addEventListener('click', ()=>{ addValue(el.dataset.ex,1); sDig1(); }));
+  bindDeletes(sDig1);
+  document.getElementById('nextq').onclick = () => { S.q1++; sDig1(); };
+  document.getElementById('back').onclick = () => { S.step='context'; show(); };
+  document.getElementById('next').onclick = () => {
+    if(firstOrder().length < 2){ document.getElementById('warn').textContent='Добавь хотя бы две ценности — попробуй другой вопрос.'; return; }
+    S.q2v = 0; S.q2q = 0; S.step='dig2'; show();
+  };
+}
+
+/* -- dig round 2 -- */
+function sDig2(){
+  const fo = firstOrder();
+  if(S.q2v >= fo.length){ startResonance(); return; }
+  const v = fo[S.q2v];
+  const q = Q2[S.q2q % Q2.length](v.text);
+  const second = S.values.filter(x => x.order === 2);
+  render(`
+  <div class="card">
+    <h2>Раскопка: второй круг</h2>
+    <p class="muted">Теперь копаем за каждой найденной ценностью — что стоит за ней. Ценность ${S.q2v+1} из ${fo.length}: <span class="chip o1">${esc(v.text)}</span></p>
+    <div class="qbox"><div class="q">${esc(q)}</div>
+      <div class="hint">Лови в своём ответе именно ценности — слова, за которыми что-то ёкает. Если ответы повторяются или ничего не приходит — просто иди дальше, у структуры есть границы.</div>
+    </div>
+    <div class="addrow">
+      <input type="text" id="val" placeholder="Что за этим стоит…" maxlength="40">
+      <button class="btn secondary" id="add">Добавить</button>
+    </div>
+    <div class="chips">${chipsHtml(second, true)}</div>
+    <div class="btnrow spread">
+      <button class="btn ghost" id="back">← Первый круг</button>
+      <div>
+        <button class="btn secondary" id="nextq">Другой вопрос</button>
+        <button class="btn" id="next">${S.q2v+1 < fo.length ? 'Следующая ценность →' : 'К проверке откликом →'}</button>
+      </div>
+    </div>
+  </div>`);
+  const inp = document.getElementById('val');
+  inp.focus();
+  const add = () => { if(addValue(inp.value,2)){ inp.value=''; sDig2(); document.getElementById('val').focus(); } };
+  document.getElementById('add').onclick = add;
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') add(); });
+  bindDeletes(sDig2);
+  document.getElementById('nextq').onclick = () => { S.q2q++; sDig2(); };
+  document.getElementById('back').onclick = () => { S.step='dig1'; show(); };
+  document.getElementById('next').onclick = () => { S.q2v++; S.q2q = 0; sDig2(); };
+}
+
+/* -- resonance -- */
+function startResonance(){
+  S.resoQueue = S.values.map(v=>v.id);
+  // лёгкое перемешивание, чтобы не идти строго по порядку раскопки
+  for(let i=S.resoQueue.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [S.resoQueue[i],S.resoQueue[j]]=[S.resoQueue[j],S.resoQueue[i]]; }
+  S.resoIdx = 0; S.step='resonance'; show();
+}
+function sResonance(){
+  if(S.resoIdx >= S.resoQueue.length){ finishResonance(); return; }
+  const v = byId(S.resoQueue[S.resoIdx]);
+  if(!v){ S.resoIdx++; sResonance(); return; }
+  render(`
+  <div class="reso">
+    <div class="sub">${S.resoIdx+1} из ${S.resoQueue.length} · Прочитай слово. Можешь закрыть глаза и произнести его про себя.</div>
+    <div class="word">${esc(v.text)}</div>
+    <div class="sub" style="margin-bottom:26px">Ёкает? Отзывается — «это моё, это про меня»?</div>
+    <div class="btnrow">
+      <button class="btn yes" id="yes" disabled>Да, моё</button>
+      <button class="btn no" id="no" disabled>Не совсем</button>
+    </div>
+  </div>
+  <p class="hint" style="text-align:center">Здесь нет правильных ответов — доверяй сигналу тела, а не логике. «50/50» считается за «не совсем».</p>`);
+  const yes = document.getElementById('yes'), no = document.getElementById('no');
+  setTimeout(()=>{ yes.disabled=false; no.disabled=false; }, 1200);
+  yes.onclick = () => { v.resonate = true;  S.resoIdx++; sResonance(); };
+  no.onclick  = () => { v.resonate = false; S.resoIdx++; sResonance(); };
+}
+function finishResonance(){
+  if(resonant().length < 2){
+    render(`
+    <div class="card">
+      <h2>Откликнулось меньше двух слов</h2>
+      <p>Так бывает: либо формулировки пока не твои, либо сигнал ещё тихий. Можно вернуться и покопать ещё, а можно построить иерархию из всех найденных слов.</p>
+      <div class="btnrow">
+        <button class="btn secondary" id="more">← Покопать ещё</button>
+        <button class="btn" id="all">Взять все слова</button>
+      </div>
+    </div>`);
+    document.getElementById('more').onclick = () => { S.step='dig1'; show(); };
+    document.getElementById('all').onclick = () => { S.values.forEach(v=>v.resonate=true); startSort(); };
+    return;
+  }
+  startSort();
+}
+
+/* -- pairwise sort -- */
+function startSort(){
+  const q = resonant().map(v=>v.id);
+  S.sort = { sorted:[], queue:q, cur:null, p:0, count:0 };
+  S.step='sort';
+  nextSortItem();
+}
+function nextSortItem(){
+  const st = S.sort;
+  st.cur = null;
+  while(st.queue.length){
+    const id = st.queue.shift();
+    if(st.sorted.length === 0){ st.sorted.push(id); continue; }
+    st.cur = id; st.p = st.sorted.length - 1; // сравниваем с нижним
+    break;
+  }
+  if(st.cur === null){ S.step='results'; show(); return; }
+  show();
+}
+function sSort(){
+  const st = S.sort;
+  const cur = byId(st.cur), other = byId(st.sorted[st.p]);
+  render(`
+  <div class="card">
+    <h2>Что важнее?</h2>
+    <p class="muted">Представь: в завтрашний день можно взять только одно. Отвечай первым импульсом — не из головы, изнутри. Иерархия есть всегда; если «никак не выбрать» — просто дай себе ещё немного времени.</p>
+    <div class="duel">
+      <button id="a">${esc(cur.text)}</button>
+      <div class="vs">или</div>
+      <button id="b">${esc(other.text)}</button>
+    </div>
+    <p class="hint">Сравнение ${st.count+1} · осталось разместить: ${st.queue.length + 1}</p>
+    ${st.sorted.length ? `<h3 style="margin-top:18px">Уже выстроено</h3>
+    <ol class="spine mini">${st.sorted.map((id,i)=>`<li><span class="n">${i+1}</span>${esc(byId(id).text)}</li>`).join('')}</ol>`:''}
+  </div>`);
+  const answer = curWins => {
+    st.count++;
+    if(curWins){
+      if(st.p === 0){ st.sorted.splice(0,0,st.cur); nextSortItem(); return; }
+      st.p--; show();
+    } else {
+      st.sorted.splice(st.p+1,0,st.cur); nextSortItem();
+    }
+  };
+  document.getElementById('a').onclick = () => answer(true);
+  document.getElementById('b').onclick = () => answer(false);
+}
+
+/* -- results -- */
+function sResults(){
+  const order = S.sort.sorted.map(byId);
+  const off = S.values.filter(v=>v.resonate!==true);
+  render(`
+  <div class="card">
+    <h2>Твоя иерархия ценностей</h2>
+    <p class="muted">Контекст: <b>${esc(S.context)}</b></p>
+    <p>Вот позвоночник этого контекста — от самого важного вниз. Он не хороший и не плохой, он просто есть. Посмотри на верхние строчки: узнаёшь? Насколько это сейчас присутствует в твоей жизни?</p>
+    <ol class="spine">${order.map((v,i)=>`<li class="${i===0?'top':''}"><span class="n">${i+1}</span>${esc(v.text)}${i===0?' ★':''}</li>`).join('')}</ol>
+    ${off.length?`<p class="small muted" style="margin-top:12px">Не откликнулись (скорее всего, ниже в иерархии): ${off.map(v=>esc(v.text)).join(', ')}</p>`:''}
+    <div class="notice" style="margin-top:16px">Важно: то, что твоё сознание «думало» о порядке, часто не совпадает с тем, что показало попарное сравнение. Действуем мы из реальной иерархии — а не из представлений о ней.</div>
+    <div class="btnrow spread">
+      <button class="btn ghost" id="redo">↻ Пересобрать иерархию</button>
+      <button class="btn" id="next">Дальше: критерии →</button>
+    </div>
+  </div>`);
+  document.getElementById('redo').onclick = startSort;
+  document.getElementById('next').onclick = () => { S.step='criteria'; show(); };
+}
+
+/* -- criteria -- */
+function sCriteria(){
+  const top = S.sort.sorted.slice(0,3).map(byId);
+  render(`
+  <div class="card">
+    <h2>Критерии: как это выглядит в жизни</h2>
+    <p>Ценность становится рабочим инструментом, когда ты можешь ответить: <i>как я пойму, что она реализуется?</i> Например, «здоровье» — это «легко пробегаю 5 км, просыпаюсь со свежим желанием работать, анализы в норме».</p>
+    <p class="muted small">Опиши хотя бы верхние ценности. Никто, кроме тебя, не знает ответа.</p>
+    ${top.map((v,i)=>`
+      <h3 style="margin-top:18px">${i+1}. ${esc(v.text)}</h3>
+      <textarea data-cr="${v.id}" placeholder="Что конкретно должно происходить в твоей жизни, чтобы ты чувствовал(а): «${esc(v.text)}» реализуется?">${esc(S.criteria[v.id]||'')}</textarea>
+    `).join('')}
+    <div class="btnrow spread">
+      <button class="btn ghost" id="back">← Иерархия</button>
+      <div>
+        <button class="btn secondary" id="skip">Пропустить</button>
+        <button class="btn" id="next">Дальше: эксперимент →</button>
+      </div>
+    </div>
+  </div>`);
+  const save = () => app.querySelectorAll('[data-cr]').forEach(t => S.criteria[+t.dataset.cr] = t.value.trim());
+  document.getElementById('back').onclick = () => { save(); S.step='results'; show(); };
+  document.getElementById('skip').onclick = () => { S.step='apply'; show(); };
+  document.getElementById('next').onclick = () => { save(); S.step='apply'; show(); };
+}
+
+/* -- weekly experiment -- */
+function sApply(){
+  const A = S.apply;
+  const hier = S.sort.sorted.map(byId);
+  if(!A.stage) A.stage = 1;
+
+  if(A.stage === 1){
+    render(`
+    <div class="card">
+      <h2>Сила иерархии</h2>
+      <p>Вспомни: что на этой неделе <b>не получилось</b> из того, что ты хотел(а) делать в контексте «${esc(S.context)}»? Например: «хотел вставать и делать зарядку — не вставал».</p>
+      <textarea id="fail" placeholder="Что не получалось…">${esc(A.fail)}</textarea>
+      <div class="btnrow spread">
+        <button class="btn ghost" id="back">← Критерии</button>
+        <button class="btn" id="next">Дальше</button>
+      </div>
+    </div>`);
+    document.getElementById('back').onclick = () => { A.fail=document.getElementById('fail').value.trim(); S.step='criteria'; show(); };
+    document.getElementById('next').onclick = () => {
+      const t = document.getElementById('fail').value.trim();
+      if(!t){ document.getElementById('fail').style.borderColor='var(--danger)'; return; }
+      A.fail = t; A.stage = 2; sApply();
+    };
+    return;
+  }
+
+  if(A.stage === 2){
+    render(`
+    <div class="card">
+      <h2>Зачем ты этого хотел(а)?</h2>
+      <p>Какая ценность должна была реализоваться, если бы получилось? Выбери из иерархии или напиши свою.</p>
+      <div class="chips">${hier.map(v=>`<span class="chip pick ${A.wantedId===v.id?'sel':''}" data-w="${v.id}">${esc(v.text)}</span>`).join('')}</div>
+      <input type="text" id="wfree" placeholder="…или своя формулировка (например: дисциплина)" value="${esc(A.wantedId?'':A.wantedText)}" style="margin-top:10px">
+      <div class="btnrow spread">
+        <button class="btn ghost" id="back">← Назад</button>
+        <button class="btn" id="next">Дальше</button>
+      </div>
+    </div>`);
+    app.querySelectorAll('[data-w]').forEach(el => el.addEventListener('click', ()=>{
+      A.wantedId = +el.dataset.w; A.wantedText = byId(A.wantedId).text; sApply();
+    }));
+    document.getElementById('back').onclick = () => { A.stage=1; sApply(); };
+    document.getElementById('next').onclick = () => {
+      const free = document.getElementById('wfree').value.trim();
+      if(free){ A.wantedId=null; A.wantedText=free; }
+      if(!A.wantedText){ document.getElementById('wfree').style.borderColor='var(--danger)'; return; }
+      A.stage=3; sApply();
+    };
+    return;
+  }
+
+  if(A.stage === 3){
+    render(`
+    <div class="card">
+      <h2>А что победило?</h2>
+      <p>Раз не получилось — победила другая ценность, более высокая в бессознательной иерархии. Какая? Часто это отдых, спокойствие, безопасность, бережность к себе…</p>
+      <input type="text" id="win" placeholder="Например: отдых и бережность к себе" value="${esc(A.winner)}">
+      <div class="btnrow spread">
+        <button class="btn ghost" id="back">← Назад</button>
+        <button class="btn" id="next">Дальше</button>
+      </div>
+    </div>`);
+    const inp = document.getElementById('win'); inp.focus();
+    document.getElementById('back').onclick = () => { A.stage=2; sApply(); };
+    const go = () => {
+      if(!inp.value.trim()){ inp.style.borderColor='var(--danger)'; return; }
+      A.winner = inp.value.trim(); A.stage=4; A.fuelIdx=0; A.fuelId=null; sApply();
+    };
+    document.getElementById('next').onclick = go;
+    inp.addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+    return;
+  }
+
+  if(A.stage === 4){
+    if(A.fuelId !== null || A.fuelIdx >= hier.length){ A.stage=5; sApply(); return; }
+    const v = hier[A.fuelIdx];
+    render(`
+    <div class="card">
+      <h2>Ищем топливо</h2>
+      <p>Ради «${esc(A.wantedText)}» ты этого не делал(а). Пойдём по твоей иерархии сверху вниз и поищем ценность, ради которой — сделал(а) бы.</p>
+      <div class="qbox"><div class="q">А ради ценности «${esc(v.text)}» — ты был(а) бы готов(а)?</div>
+      <div class="hint">${esc(A.fail)}</div></div>
+      <div class="btnrow">
+        <button class="btn" id="yes">Да, ради этого — да</button>
+        <button class="btn secondary" id="no">Нет / не отзывается</button>
+      </div>
+      <p class="hint">Ценность ${A.fuelIdx+1} из ${hier.length}</p>
+    </div>`);
+    document.getElementById('yes').onclick = () => { A.fuelId = v.id; A.stage=5; sApply(); };
+    document.getElementById('no').onclick = () => { A.fuelIdx++; sApply(); };
+    return;
+  }
+
+  // stage 5 — experiment card
+  const fuel = A.fuelId !== null ? byId(A.fuelId) : null;
+  render(`
+  <div class="card">
+    <h2>Эксперимент на неделю</h2>
+    ${fuel ? `
+    <p>Нашлось. Не «${esc(A.wantedText)}» двигает тебя к этому действию, а <b>«${esc(fuel.text)}»</b>.</p>
+    <div class="result-quote">Всю следующую неделю, когда соберёшься «${esc(A.fail)}», — напоминай себе: это не про ${esc(A.wantedText.toLowerCase())}. Это про «${esc(fuel.text)}». И наблюдай, что изменится в поведении и состоянии.</div>
+    <p class="small muted">Заодно замечай ценность-победителя («${esc(A.winner)}») — она не враг, она тоже твоя. Вопрос не в борьбе, а в том, чтобы находить способы действия, где обе удовлетворяются.</p>`
+    : `
+    <p>Ни одна из верхних ценностей не зажгла это действие. Это тоже ответ: возможно, «${esc(A.fail)}» — вообще не твоя задача, а чужая, взятая «через колено». Попробуй переформулировать само действие так, чтобы оно вело к верхней ценности «${esc(hier[0].text)}» — или честно отпустить его.</p>`}
+    <div class="btnrow spread">
+      <button class="btn ghost" id="back">← Пройти заново</button>
+      <button class="btn" id="next">К итогам →</button>
+    </div>
+  </div>`);
+  document.getElementById('back').onclick = () => { A.stage=1; sApply(); };
+  document.getElementById('next').onclick = () => { S.step='final'; show(); };
+}
+
+/* -- final -- */
+function buildReport(){
+  const order = S.sort.sorted.map(byId);
+  const off = S.values.filter(v=>v.resonate!==true);
+  const A = S.apply;
+  const fuel = A.fuelId !== null ? byId(A.fuelId) : null;
+  const d = new Date();
+  const date = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+  let md = `# Прояснение ценностей — ${S.context}\n\nДата: ${date}\n\n## Иерархия ценностей (сверху — самое важное)\n\n`;
+  order.forEach((v,i)=>{ md += `${i+1}. ${v.text}\n`; });
+  if(off.length) md += `\nНе откликнулись: ${off.map(v=>v.text).join(', ')}\n`;
+  const crits = order.filter(v => (S.criteria[v.id]||'').trim());
+  if(crits.length){
+    md += `\n## Критерии — как я пойму, что ценность реализуется\n\n`;
+    crits.forEach(v=>{ md += `**${v.text}** — ${S.criteria[v.id].trim()}\n\n`; });
+  }
+  if(A.fail){
+    md += `## Эксперимент на неделю\n\n- Что не получалось: ${A.fail}\n- Ради чего хотел(а): ${A.wantedText}\n- Что побеждало: ${A.winner}\n`;
+    md += fuel
+      ? `- Топливо: **${fuel.text}**\n\n> Когда соберусь «${A.fail}» — напоминаю себе: это про «${fuel.text}». Наблюдаю, что меняется.\n`
+      : `- Топливо не нашлось — возможно, действие стоит переформулировать под ценность «${order[0].text}» или отпустить.\n`;
+  }
+  md += `\n---\n_Иерархия — это не приговор, а карта. Планируй жизнь исходя из неё, и на пути к целям реализуй верхние ценности — они дают энергию. Пересобирай иерархию раз в несколько месяцев или при смене контекста._\n`;
+  return md;
+}
+function sFinal(){
+  const order = S.sort.sorted.map(byId);
+  render(`
+  <div class="card">
+    <h2>Готово</h2>
+    <p class="muted">Контекст: <b>${esc(S.context)}</b></p>
+    <ol class="spine">${order.map((v,i)=>`<li class="${i===0?'top':''}"><span class="n">${i+1}</span>${esc(v.text)}${i===0?' ★':''}</li>`).join('')}</ol>
+    <div class="notice">Страница не хранит данные — сохрани результат сейчас.</div>
+    <div class="btnrow">
+      <button class="btn" id="dl">⬇ Скачать результат (.md)</button>
+      <button class="btn secondary" id="cp">Скопировать текст</button>
+    </div>
+    <div class="btnrow" style="margin-top:24px">
+      <button class="btn ghost" id="again">↻ Пройти другой контекст</button>
+    </div>
+  </div>`);
+  document.getElementById('dl').onclick = () => {
+    const blob = new Blob([buildReport()], {type:'text/markdown;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `ценности — ${S.context}.md`;
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+  document.getElementById('cp').onclick = e => {
+    navigator.clipboard.writeText(buildReport()).then(()=>{ e.target.textContent='Скопировано ✓'; });
+  };
+  document.getElementById('again').onclick = () => {
+    if(confirm('Начать заново? Текущие результаты будут потеряны — сначала скачай их.')){
+      Object.assign(S, {step:'intro', context:'', values:[], nextId:1, q1:0, q2v:0, q2q:0,
+        resoQueue:[], resoIdx:0, sort:null, criteria:{}, apply:{fail:'',wantedId:null,wantedText:'',winner:'',fuelIdx:0,fuelId:null,stage:1}});
+      show();
+    }
+  };
+}
+
+show();
+</script>
+</body>
+</html>
