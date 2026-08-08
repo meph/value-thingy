@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Лесенка ценностей</title>
+<style>
+  :root{
+    --bg:#f5f2ec; --card:#ffffff; --ink:#2b2925; --muted:#807a6e;
+    --accent:#8a5a2b; --accent-soft:#f3e9db; --line:#e8e3d8;
+    --yellow:#ffe9a3; --yellow-ink:#6b5410; --green:#dcefdc; --green-ink:#2c5a2e;
+    --danger:#b4574a;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:720px; margin:0 auto; padding:28px 20px 80px;}
+  h1,h2,h3{font-family:Georgia,"Times New Roman",serif; font-weight:600; line-height:1.25;}
+  h1{font-size:34px;} h2{font-size:25px; margin-bottom:10px;} h3{font-size:18px; margin-bottom:8px;}
+  p{margin-bottom:12px;}
+  .muted{color:var(--muted);} .small{font-size:13.5px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:26px 26px 24px; box-shadow:0 2px 14px rgba(60,50,20,.05); margin-bottom:16px;}
+  .btn{
+    display:inline-block; border:none; cursor:pointer; border-radius:12px;
+    padding:12px 22px; font-size:16px; font-weight:600; font-family:inherit;
+    background:var(--accent); color:#fff; transition:opacity .15s;
+  }
+  .btn:hover{opacity:.92;}
+  .btn.secondary{background:transparent; color:var(--accent); border:1.5px solid var(--accent);}
+  .btn.ghost{background:transparent; color:var(--muted); border:none; font-weight:500; padding:12px 10px;}
+  .btn.big{font-size:18px; padding:16px 28px;}
+  .btnrow{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px;}
+  .spread{justify-content:space-between;}
+  .steps{display:flex; gap:5px; margin-bottom:26px;}
+  .steps div{flex:1; height:5px; border-radius:3px; background:var(--line);}
+  .steps div.on{background:var(--accent);}
+  .stepname{font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;}
+  input[type=text], textarea{
+    width:100%; border:1.5px solid var(--line); border-radius:12px; background:#fdfcf9;
+    padding:13px 15px; font:inherit; color:var(--ink); outline:none; margin-bottom:10px;
+  }
+  input[type=text]:focus, textarea:focus{border-color:var(--accent);}
+  textarea{min-height:90px; resize:vertical;}
+  label{display:block; font-size:14px; color:var(--muted); margin:14px 0 6px;}
+  .qbox{background:var(--accent-soft); border-radius:14px; padding:18px 20px; margin:16px 0;}
+  .qbox .q{font-family:Georgia,serif; font-size:20px; line-height:1.4;}
+  .hint{font-size:13.5px; color:var(--muted); margin-top:8px;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0;}
+  .chip{
+    padding:8px 15px; border-radius:999px; font-size:15px; font-weight:500; cursor:pointer;
+    background:#fff; border:1.5px solid var(--line); display:inline-flex; gap:7px; align-items:baseline;
+  }
+  .chip:hover{border-color:var(--accent); color:var(--accent);}
+  .chip.sel{background:var(--yellow); border-color:#e3c96a; color:var(--yellow-ink);}
+  .chip .n{font-size:12px; color:var(--muted);}
+  .spine{list-style:none; margin:10px 0;}
+  .spine li{background:#fdfcf9; border:1px solid var(--line); border-radius:11px; padding:9px 15px; margin-bottom:6px; display:flex; gap:12px; align-items:baseline;}
+  .spine li .n{color:var(--muted); font-size:13px; min-width:22px;}
+  .spine li.hl-want{background:var(--green); border-color:#b9d8ba;}
+  .spine li.hl-win{background:var(--yellow); border-color:#e3c96a;}
+  .notice{background:#fff8e6; border:1px solid #efdfae; color:#6b5410; border-radius:12px; padding:11px 15px; font-size:13.5px; margin:14px 0;}
+  .lever{
+    border-left:3px solid var(--accent); padding:8px 0 8px 18px; margin:16px 0;
+    font-family:Georgia,serif; font-size:20px; line-height:1.45;
+  }
+  .fade{animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  .tag{display:inline-block; background:var(--accent-soft); color:var(--accent); border-radius:8px; padding:2px 9px; font-size:13px; font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap"><div id="app"></div></div>
+<script>
+"use strict";
+
+const S = {
+  step:'intro',
+  hier:[],                 // строки по порядку, [0] = №1
+  want:'', situation:'',
+  wantIdx:null,
+  instead:'', gain:'',
+  winIdx:null, winText:'',
+  reflect:'',
+  leverIdx:null,           // выбранный из топ-3 (индекс в hier)
+  leverTried:{},           // idx -> ответ
+  detour:'',
+  final:'', eco:''
+};
+const ORDER = ['intro','setup','s1','s2','s3','s4','s5','s6','s7','s8','final'];
+const NAMES = {
+  intro:'', setup:'Подготовка · твоя иерархия', s1:'Шаг 1 · С чего начнём',
+  s2:'Шаг 2 · Ради чего хотелось', s3:'Шаг 3 · Что перевесило', s4:'Шаг 4 · Два номера',
+  s5:'Шаг 5 · Что из верхних откликается', s6:'Шаг 6 · Рычаг', s7:'Шаг 7 · Соседняя дверь',
+  s8:'Шаг 8 · Три опоры', final:'Итог'
+};
+
+const app = document.getElementById('app');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const lc = s => s ? s.charAt(0).toLowerCase()+s.slice(1) : s;
+const winName = () => S.winIdx !== null ? S.hier[S.winIdx] : S.winText;
+
+function render(html){
+  const idx = ORDER.indexOf(S.step);
+  const bar = S.step==='intro' ? '' :
+    `<div class="stepname">${NAMES[S.step]}</div>
+     <div class="steps">${ORDER.slice(1).map((_,i)=>`<div class="${i < idx ? 'on':''}"></div>`).join('')}</div>`;
+  app.innerHTML = `${bar}<div class="fade">${html}</div>`;
+}
+function nav(back, next, nextLabel){
+  return `<div class="btnrow spread">
+    <button class="btn ghost" id="back">← Назад</button>
+    <button class="btn" id="next">${nextLabel||'Дальше'}</button>
+  </div>`;
+}
+function bindNav(backStep, onNext){
+  document.getElementById('back').onclick = () => { S.step=backStep; show(); };
+  document.getElementById('next').onclick = onNext;
+}
+function need(el){ el.style.borderColor='var(--danger)'; el.focus(); }
+function show(){ ({intro:sIntro, setup:sSetup, s1, s2, s3, s4, s5, s6, s7, s8, final:sFinal})[S.step](); }
+
+/* intro */
+function sIntro(){
+  render(`
+  <div class="card">
+    <h1>Лесенка ценностей</h1>
+    <p class="muted" style="margin-top:6px">Соло-версия · 25–35 минут</p>
+    <p style="margin-top:18px">Эта практика — для места, где на неделе <b>хотелось — и не дошло до дела</b>. Мы найдём, какая ценность стояла за желанием, какая перевесила, и соберём решение, которое опирается на твои верхние ценности, а не ломает их через колено.</p>
+    <p>Понадобится твой столбик ценностей с номерами — иерархия из упражнения «Прояснение ценностей». Если её нет, сначала пройди его.</p>
+    <div class="notice">В одиночку ответы приходят медленнее, чем в паре: некому забросить вопрос со стороны. Читай вопрос, закрывай глаза и жди — 20–30 секунд тишины на каждый ответ. Фразы из шагов 6–8 произноси <b>вслух</b>: так они работают.</div>
+    <div class="notice">⚠️ Страница ничего не сохраняет — в конце скачай итог.</div>
+    <div class="btnrow"><button class="btn big" id="go">Начать</button></div>
+  </div>`);
+  document.getElementById('go').onclick = () => { S.step='setup'; show(); };
+}
+
+/* setup */
+function sSetup(){
+  render(`
+  <div class="card">
+    <h2>Твоя иерархия</h2>
+    <p>Вставь свой столбик — по одной ценности на строку, сверху самое важное. Номера и точки в начале строк можно не убирать, я их пойму.</p>
+    <textarea id="raw" style="min-height:180px" placeholder="1. состояние ресурса&#10;2. больше себе позволять&#10;3. реализация таланта&#10;…">${esc(S.hier.map((v,i)=>`${i+1}. ${v}`).join('\n'))}</textarea>
+    <div id="preview"></div>
+    <div class="btnrow spread">
+      <button class="btn ghost" id="back">← Назад</button>
+      <button class="btn" id="next">Дальше</button>
+    </div>
+    <p class="hint" id="warn"></p>
+  </div>`);
+  bindNav('intro', () => {
+    const lines = document.getElementById('raw').value.split('\n')
+      .map(l => l.replace(/^\s*\d+\s*[.)·—-]?\s*/,'').trim()).filter(Boolean);
+    if(lines.length < 3){ document.getElementById('warn').textContent='Нужно хотя бы три ценности (лучше — весь столбик из десяти).'; return; }
+    S.hier = lines.slice(0,15);
+    S.step='s1'; show();
+  });
+}
+
+/* 1 */
+function s1(){
+  render(`
+  <div class="card">
+    <h2>С чего начнём</h2>
+    <div class="qbox"><div class="q">Что ты хотел(а) сделать на этой неделе — и не сложилось?</div>
+    <div class="hint">Что-то конкретное: день, ситуация. Не «вообще спорт», а «в среду утром — пробежка».</div></div>
+    <label>Коротко: что хотелось сделать</label>
+    <input type="text" id="want" placeholder="например: сесть за презентацию в четверг" value="${esc(S.want)}" maxlength="90">
+    <label>Что это был за день? Что там происходило?</label>
+    <textarea id="sit" placeholder="пара штрихов о ситуации…">${esc(S.situation)}</textarea>
+    ${nav()}
+  </div>`);
+  bindNav('setup', () => {
+    const w = document.getElementById('want');
+    if(!w.value.trim()){ need(w); return; }
+    S.want = w.value.trim(); S.situation = document.getElementById('sit').value.trim();
+    S.step='s2'; show();
+  });
+}
+
+/* 2 */
+function s2(){
+  render(`
+  <div class="card">
+    <h2>Ради чего тебе этого хотелось</h2>
+    <div class="qbox"><div class="q">Какое из твоих слов стоит за этим желанием?</div>
+    <div class="hint">Посмотри в столбик не спеша. Ради чего хотелось «${esc(lc(S.want))}»?</div></div>
+    <div class="chips">${S.hier.map((v,i)=>`<span class="chip ${S.wantIdx===i?'sel':''}" data-i="${i}"><span class="n">№${i+1}</span>${esc(v)}</span>`).join('')}</div>
+    ${nav()}
+  </div>`);
+  app.querySelectorAll('[data-i]').forEach(el => el.onclick = () => { S.wantIdx=+el.dataset.i; s2(); });
+  bindNav('s1', () => { if(S.wantIdx===null) return; S.step='s3'; show(); });
+}
+
+/* 3 */
+function s3(){
+  render(`
+  <div class="card">
+    <h2>Что перевесило</h2>
+    <div class="qbox"><div class="q">А чем ты занялся(лась) вместо? И ради чего — что тебе это дало?</div>
+    <div class="hint">То поведение оберегало что-то важное. Не обесценивай: там было что-то нужное — что именно?</div></div>
+    <label>Чем занялся(лась) вместо</label>
+    <input type="text" id="instead" placeholder="например: залип(ла) в сериал, разгребал(а) мелочи…" value="${esc(S.instead)}" maxlength="120">
+    <label>Что это дало? Какая ценность за этим стояла — поищи сначала в столбике:</label>
+    <div class="chips">${S.hier.map((v,i)=>`<span class="chip ${S.winIdx===i?'sel':''}" data-i="${i}"><span class="n">№${i+1}</span>${esc(v)}</span>`).join('')}</div>
+    <input type="text" id="wintext" placeholder="…или её нет в списке — назови словом: спокойствие, безопасность…" value="${esc(S.winIdx===null?S.winText:'')}" maxlength="60">
+    ${nav()}
+  </div>`);
+  app.querySelectorAll('[data-i]').forEach(el => el.onclick = () => {
+    S.instead = document.getElementById('instead').value;
+    S.winIdx=+el.dataset.i; S.winText=''; s3();
+  });
+  bindNav('s2', () => {
+    const inst = document.getElementById('instead'), wt = document.getElementById('wintext');
+    if(!inst.value.trim()){ need(inst); return; }
+    S.instead = inst.value.trim();
+    if(wt.value.trim()){ S.winIdx=null; S.winText=wt.value.trim(); }
+    if(S.winIdx===null && !S.winText){ need(wt); return; }
+    S.step='s4'; show();
+  });
+}
+
+/* 4 */
+function s4(){
+  const w = S.wantIdx, v = S.winIdx;
+  let verdict;
+  if(v === null){
+    verdict = `<p>Ценность «<b>${esc(S.winText)}</b>» не попала в твой столбик — а между тем она только что победила «${esc(S.hier[w])}» (№${w+1}) в реальном поведении. Похоже, в бессознательной иерархии она стоит выше, чем кажется. Побудь с этим.</p>`;
+  } else if(v > w){
+    verdict = `<p>Получается, выбор пошёл <b>не по твоему порядку</b>: победило №${v+1} «${esc(S.hier[v])}», хотя ради этого действия стояло №${w+1} «${esc(S.hier[w])}» — выше. Побудь с этим, не проскакивай. Что это про тебя говорит?</p>`;
+  } else if(v < w){
+    verdict = `<p>Порядок сработал <b>честно</b>: «${esc(S.hier[v])}» (№${v+1}) и правда стоит у тебя выше, чем «${esc(S.hier[w])}» (№${w+1}). Тогда вопрос не «почему я не смог(ла)», а <b>«как сделать нужное, ничего не отняв»</b>.</p>`;
+  } else {
+    verdict = `<p>Одна и та же ценность стоит и за желанием, и за тем, что перевесило. Интересно: похоже, конфликт не между ценностями, а между двумя способами её реализовать. Что это про тебя говорит?</p>`;
+  }
+  render(`
+  <div class="card">
+    <h2>Посмотри на два номера</h2>
+    <ol class="spine">${S.hier.map((x,i)=>`<li class="${i===w?'hl-want':''} ${i===v?'hl-win':''}"><span class="n">${i+1}</span>${esc(x)}${i===w?' <span class="tag">ради этого хотелось</span>':''}${i===v?' <span class="tag">это перевесило</span>':''}</li>`).join('')}
+    ${v===null?`<li class="hl-win"><span class="n">?</span>${esc(S.winText)} <span class="tag">это перевесило · вне списка</span></li>`:''}</ol>
+    ${verdict}
+    <label>Что это про тебя говорит? Запиши, что открывается:</label>
+    <textarea id="ref" placeholder="…">${esc(S.reflect)}</textarea>
+    ${nav()}
+  </div>`);
+  bindNav('s3', () => { S.reflect=document.getElementById('ref').value.trim(); S.step='s5'; show(); });
+}
+
+/* 5 */
+function s5(){
+  const top = S.hier.slice(0,3);
+  render(`
+  <div class="card">
+    <h2>Что из верхних откликается</h2>
+    <div class="qbox"><div class="q">Из твоих первых трёх — какое ближе всего к «${esc(lc(S.want))}»?</div>
+    <div class="hint">Прочитай каждое, прислушайся. С какого начнём?</div></div>
+    <div class="chips">${top.map((v,i)=>`<span class="chip ${S.leverIdx===i?'sel':''}" data-i="${i}"><span class="n">№${i+1}</span>${esc(v)}</span>`).join('')}</div>
+    ${nav()}
+  </div>`);
+  app.querySelectorAll('[data-i]').forEach(el => el.onclick = () => { S.leverIdx=+el.dataset.i; s5(); });
+  bindNav('s4', () => { if(S.leverIdx===null) return; S.step='s6'; show(); });
+}
+
+/* 6 */
+function s6(){
+  const i = S.leverIdx, v = S.hier[i];
+  const others = [0,1,2].filter(x => x!==i && x < S.hier.length);
+  render(`
+  <div class="card">
+    <h2>Попробуй рычаг</h2>
+    <p>Произнеси эту фразу <b>вслух</b> — целиком. Потом закрой глаза и дай паузу: ответ может прийти не сразу. Не настаивай и не повторяй громче.</p>
+    <div class="lever">Раз для меня «${esc(v)}» — самое важное, как сделать так, чтобы «${esc(lc(S.want))}» её поддерживало?</div>
+    <label>Что приходит в ответ?</label>
+    <textarea id="ans" placeholder="запиши, что откликнулось — даже если это пока обрывки…">${esc(S.leverTried[i]||'')}</textarea>
+    ${others.length?`<p class="hint">Можно попробовать ту же формулу с другими верхними:</p>
+    <div class="chips">${others.map(x=>`<span class="chip ${S.leverTried[x]?'sel':''}" data-o="${x}"><span class="n">№${x+1}</span>${esc(S.hier[x])}${S.leverTried[x]?' ✓':''}</span>`).join('')}</div>`:''}
+    ${nav()}
+  </div>`);
+  app.querySelectorAll('[data-o]').forEach(el => el.onclick = () => {
+    S.leverTried[S.leverIdx] = document.getElementById('ans').value.trim();
+    S.leverIdx = +el.dataset.o; s6();
+  });
+  bindNav('s5', () => {
+    S.leverTried[S.leverIdx] = document.getElementById('ans').value.trim();
+    if(!Object.values(S.leverTried).some(a=>a)){ need(document.getElementById('ans')); return; }
+    S.step='s7'; show();
+  });
+}
+
+/* 7 */
+function s7(){
+  render(`
+  <div class="card">
+    <h2>Попробуй соседнюю дверь</h2>
+    <p>Теперь обходной путь: как сделать нужное, ничего не отняв у того, что перевесило.</p>
+    <div class="lever">Есть ли способ «${esc(lc(S.want))}» так, чтобы «${esc(lc(winName()))}» не пострадало?</div>
+    <p class="hint">Произнеси вслух. Подожди. То, что перевесило, — не враг: оно оберегало что-то нужное, и в решении ему тоже должно быть место.</p>
+    <label>Что приходит?</label>
+    <textarea id="ans" placeholder="…">${esc(S.detour)}</textarea>
+    ${nav()}
+  </div>`);
+  bindNav('s6', () => { S.detour=document.getElementById('ans').value.trim(); S.step='s8'; show(); });
+}
+
+/* 8 */
+function s8(){
+  const lever = Object.keys(S.leverTried).filter(k=>S.leverTried[k]).map(k=>S.hier[+k]);
+  render(`
+  <div class="card">
+    <h2>Пусть решение обопрётся на три</h2>
+    <p>Собери одну фразу о желаемом действии, в которой держатся все три опоры:</p>
+    <p>
+      <span class="tag">1</span> верхняя ценность-рычаг: <b>${esc(lever.join('», «')||S.hier[S.leverIdx])}</b><br>
+      <span class="tag">2</span> то, ради чего хотелось: <b>${esc(S.hier[S.wantIdx])}</b><br>
+      <span class="tag">3</span> то, что перевесило (не должно пострадать): <b>${esc(winName())}</b>
+    </p>
+    <label>Моё решение — одной фразой:</label>
+    <textarea id="fin" placeholder="например: я сажусь за презентацию в четверг с утра на свежем ресурсе — это мой способ реализовывать талант, а вечер оставляю свободным для отдыха без вины">${esc(S.final)}</textarea>
+    <div class="qbox"><div class="q">Проверка: если ты так сделаешь — как это отзовётся? Кого ещё касается? Что и как нужно учесть?</div></div>
+    <textarea id="eco" placeholder="…при необходимости вернись и поправь фразу выше">${esc(S.eco)}</textarea>
+    ${nav(null,null,'Готово →')}
+  </div>`);
+  bindNav('s7', () => {
+    const f = document.getElementById('fin');
+    if(!f.value.trim()){ need(f); return; }
+    S.final=f.value.trim(); S.eco=document.getElementById('eco').value.trim();
+    S.step='final'; show();
+  });
+}
+
+/* final */
+function buildReport(){
+  const d = new Date();
+  const date = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+  let md = `# Лесенка ценностей\n\nДата: ${date}\n\n## Ситуация\n\n- Хотелось: ${S.want}\n`;
+  if(S.situation) md += `- Ситуация: ${S.situation}\n`;
+  md += `- Ради чего: ${S.hier[S.wantIdx]} (№${S.wantIdx+1})\n- Вместо этого: ${S.instead}\n- Что перевесило: ${winName()}${S.winIdx!==null?` (№${S.winIdx+1})`:' (вне списка)'}\n`;
+  if(S.reflect) md += `\n## Что это про меня говорит\n\n${S.reflect}\n`;
+  md += `\n## Рычаги\n\n`;
+  Object.keys(S.leverTried).forEach(k => {
+    if(S.leverTried[k]) md += `**«${S.hier[+k]}»** → ${S.leverTried[k]}\n\n`;
+  });
+  if(S.detour) md += `## Соседняя дверь\n\nКак не отнять у «${winName()}»: ${S.detour}\n\n`;
+  md += `## Решение на трёх опорах\n\n> ${S.final}\n\n`;
+  if(S.eco) md += `Проверка на отклик: ${S.eco}\n\n`;
+  md += `---\n_Неделю наблюдай: делаешь ли ты это, когда действие опирается на верхние ценности. Иерархия:_\n\n`;
+  S.hier.forEach((v,i)=>{ md += `${i+1}. ${v}\n`; });
+  return md;
+}
+function sFinal(){
+  render(`
+  <div class="card">
+    <h2>Готово</h2>
+    <div class="lever">${esc(S.final)}</div>
+    <p class="small muted">Эксперимент на неделю: замечай моменты, когда подступает «${esc(lc(S.instead))}» — и напоминай себе, на какие три опоры встало твоё решение.</p>
+    <div class="notice">Страница не хранит данные — сохрани итог сейчас.</div>
+    <div class="btnrow">
+      <button class="btn" id="dl">⬇ Скачать итог (.md)</button>
+      <button class="btn secondary" id="cp">Скопировать текст</button>
+    </div>
+    <div class="btnrow" style="margin-top:22px">
+      <button class="btn ghost" id="again">↻ Разобрать другую ситуацию</button>
+    </div>
+  </div>`);
+  document.getElementById('dl').onclick = () => {
+    const blob = new Blob([buildReport()], {type:'text/markdown;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'лесенка ценностей.md';
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+  document.getElementById('cp').onclick = e => {
+    navigator.clipboard.writeText(buildReport()).then(()=>{ e.target.textContent='Скопировано ✓'; });
+  };
+  document.getElementById('again').onclick = () => {
+    Object.assign(S, {step:'s1', want:'', situation:'', wantIdx:null, instead:'', gain:'',
+      winIdx:null, winText:'', reflect:'', leverIdx:null, leverTried:{}, detour:'', final:'', eco:''});
+    show();
+  };
+}
+
+show();
+</script>
+</body>
+</html>
